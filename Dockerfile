@@ -1,3 +1,9 @@
+FROM postgres:alpine
+
+COPY ./scripts/tables.sql /docker-entrypoint-initdb.d
+
+###
+
 FROM golang:alpine as builder
 
 RUN mkdir ../home/app

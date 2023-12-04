@@ -2,10 +2,14 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+
+	_ "github.com/lib/pq"
 )
 
 // This program will save json from 2 sources in postgres:
@@ -125,9 +129,50 @@ func convertToPeople(rUP DummyJsonPerson) []Person {
 	return people
 }
 
+// DB stuff
+const (
+	host     = "127.0.0.1" //"sql_db_1" // "127.0.0.1" // use docker name if from docker, ip if not in container!
+	port     = 5435
+	user     = "postgres"
+	password = "password2"
+	dbname   = "humans"
+)
+
+func AddToPostgres(people []Person) {
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlInfo) // first arg is driver name (pq!)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, person := range people {
+		_, err = db.Exec(`INSERT INTO people (FirstName, LastName, Latitude, Longitude, Username, passwd, Email, DateOfBirth)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			person.FirstName, person.LastName, person.Latitude, person.Longitude,
+			person.Email, person.Username, person.Password, person.DateOfBirth)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate") {
+				fmt.Println("Duplicate value not saved")
+			} else {
+				panic(err)
+			}
+		}
+	}
+}
+
 func main() {
 
 	result := getUsers()
 	fmt.Printf("%+v\n", result)
+	AddToPostgres(result)
 
 }

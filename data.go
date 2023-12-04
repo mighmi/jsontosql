@@ -1,14 +1,14 @@
 package main
 
 type Person struct {
-	FirstName   string
-	LastName    string
-	Latitude    float64
-	Longitude   float64
-	Email       string
-	Username    string
-	Password    string
-	DateOfBirth string
+	FirstName   string  `db:"FirstName"`
+	LastName    string  `db:"LastName"`
+	Latitude    float64 `db:"Latitude"`
+	Longitude   float64 `db:"Longitude"`
+	Email       string  `db:"Email"`
+	Username    string  `db:"Username"`
+	Password    string  `db:"passwd"`
+	DateOfBirth string  `db:"DateOfBirth"`
 }
 
 // https://randomuser.me/api/ is a new call per person

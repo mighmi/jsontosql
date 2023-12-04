@@ -11,15 +11,15 @@ services:
     environment: # pass these env vars
       - POSTGRES_USER=postgres # default super user
       - POSTGRES_PASSWORD=password2
-      - POSTGRES_DB=users
+      - POSTGRES_DB=humans
       - PGUSER=postgres # pg_isready is different from psql! So set it here too
     ports:
-      - "5432:5432" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+      - "5435:5435" # Forward the exposed port 8080 on the container to port 8080 on the host machine
     volumes: 
       - ./scripts/:/docker-entrypoint-initdb.d
       - db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d users"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d humans"]
       start_period: 0s
       interval: 2s
       timeout: 2s
