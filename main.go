@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -17,15 +16,6 @@ import (
 // - https://dummyjson.com/
 // - https://randomuser.me/api/
 // Aditionally, it can query/print DB information for the user, and allow the user to post new information.
-
-// Create a custom HTTP client to bypass:
-// panic: Get "https://dummyjson.com/users": tls: failed to verify certificate: x509: certificate signed by unknown authority
-// in Dockerfile there are ideas to overcome this
-var client = &http.Client{
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
-}
 
 func getUsers() []Person {
 	var choice int
@@ -54,7 +44,7 @@ func getUsers() []Person {
 }
 
 func getRandomUser() Person {
-	resp, err := client.Get("https://randomuser.me/api/")
+	resp, err := http.Get("https://randomuser.me/api/")
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +81,7 @@ func convertToPerson(rUP RandomUserPerson) Person {
 }
 
 func getDummyJsonUsers() []Person {
-	resp, err := client.Get("https://dummyjson.com/users")
+	resp, err := http.Get("https://dummyjson.com/users")
 	if err != nil {
 		panic(err)
 	}

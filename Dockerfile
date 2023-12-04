@@ -5,6 +5,9 @@ COPY ./scripts/tables.sql /docker-entrypoint-initdb.d
 ###
 
 FROM golang:alpine as builder
+#overcome tls: failed to verify certificate: x509
+RUN apk update && apk upgrade && apk add --no-cache ca-certificates && \
+update-ca-certificates
 
 RUN mkdir ../home/app
 
@@ -21,6 +24,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o mybinary
 FROM scratch
 
 COPY --from=builder /home/app/mybinary .
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENTRYPOINT ["./mybinary"]
 
