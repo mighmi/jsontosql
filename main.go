@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,8 +13,43 @@ import (
 // - https://randomuser.me/api/
 // Aditionally, it can query/print DB information for the user, and allow the user to post new information.
 
+// Create a custom HTTP client to bypass:
+// panic: Get "https://dummyjson.com/users": tls: failed to verify certificate: x509: certificate signed by unknown authority
+// in Dockerfile there are ideas to overcome this
+var client = &http.Client{
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
+
+func getUsers() []Person {
+	var choice int
+	fmt.Print("To add a user:\n1. randomuser.me\n2. dummyuser.com\n3. create your own\n")
+	fmt.Scan(&choice)
+
+	switch choice {
+	case 1:
+		fmt.Println("How many users?")
+		fmt.Scan(&choice)
+		var people []Person
+		for i := 0; i < choice; i++ {
+			person := getRandomUser()
+			people = append(people, person)
+		}
+		return people
+	case 2:
+		return getDummyJsonUsers()
+	case 3:
+		fmt.Print("Human can't make users yet")
+		return []Person{}
+	default:
+		fmt.Print("Only 1-3")
+		return []Person{}
+	}
+}
+
 func getRandomUser() Person {
-	resp, err := http.Get("https://randomuser.me/api/")
+	resp, err := client.Get("https://randomuser.me/api/")
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +86,7 @@ func convertToPerson(rUP RandomUserPerson) Person {
 }
 
 func getDummyJsonUsers() []Person {
-	resp, err := http.Get("https://dummyjson.com/users")
+	resp, err := client.Get("https://dummyjson.com/users")
 	if err != nil {
 		panic(err)
 	}
@@ -91,10 +127,7 @@ func convertToPeople(rUP DummyJsonPerson) []Person {
 
 func main() {
 
-	// result := getRandomUser()
-	// fmt.Printf("%+v\n", result)
-
-	result := getDummyJsonUsers()
+	result := getUsers()
 	fmt.Printf("%+v\n", result)
 
 }

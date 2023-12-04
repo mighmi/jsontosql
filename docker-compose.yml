@@ -1,0 +1,41 @@
+# sudo docker-compose build  // sudo docker-compose up --build
+# sudo docker-compose up --force-recreate
+# sudo docker-compose down --volumes
+
+version: '3.8'
+services:
+  db:
+    image: postgres:alpine # https://hub.docker.com/_/postgres for details on env options etc.
+              # most importantly, will run init scripts in docker-entrypoint-initdb.d folder
+    restart: always
+    environment: # pass these env vars
+      - POSTGRES_USER=postgres # default super user
+      - POSTGRES_PASSWORD=password2
+      - POSTGRES_DB=users
+      - PGUSER=postgres # pg_isready is different from psql! So set it here too
+    ports:
+      - "5432:5432" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    volumes: 
+      - ./scripts/:/docker-entrypoint-initdb.d
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users"]
+      start_period: 0s
+      interval: 2s
+      timeout: 2s
+      retries: 5
+  gocli:
+    container_name: cli
+    build:
+      dockerfile: Dockerfile
+      context: .
+    links:
+      - db
+    stdin_open: true
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+volumes: #docker volume ls // see volume attached to this container
+  db:
+    driver: local
