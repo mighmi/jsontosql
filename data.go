@@ -14,7 +14,7 @@ type Person struct {
 // https://randomuser.me/api/ is a new call per person
 
 type RandomUserPerson struct {
-	Results []struct {
+	Results []struct { // only 1 per request
 		Name struct {
 			First string `json:"first"`
 			Last  string `json:"last"`
@@ -36,43 +36,21 @@ type RandomUserPerson struct {
 	} `json:"results"`
 }
 
-// name
-// 	first
-// 	last
-
-// location
-// 	country
-// 	postcode
-// 	coordinates
-// 		latitude
-// 		longtitude
-// email
-// login
-// 	username
-// 	password
-// dob
-// 	date
-
 //	https://dummyjson.com/users is one single call for many people
 
-type DummyJsonPerson struct {
-	FirstName   string  `json:"firstName"`
-	LastName    string  `json:""`
-	Latitude    float64 `json:""`
-	Longtitude  float64 `json:""`
-	Email       string  `json:""`
-	Username    string  `json:""`
-	Password    string  `json:""`
-	DateOfBirth string  `json:""`
+type DummyJsonPerson struct { // well people...
+	Users []struct { // many people/results in one request
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Username  string `json:"username"`
+		Password  string `json:"password"`
+		BirthDate string `json:"birthDate"`
+		Address   struct {
+			Coordinates struct {
+				Lat float64 `json:"lat"`
+				Lng float64 `json:"lng"`
+			} `json:"coordinates"`
+		} `json:"address"`
+	} `json:"users"`
 }
-
-// 	firstName
-// 	lastName
-// username
-// password
-// email
-// address
-// 	coordinates:
-// 		lat:
-// 		lng:
-// birthDate
