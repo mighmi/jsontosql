@@ -131,8 +131,8 @@ func convertToPeople(rUP DummyJsonPerson) []Person {
 
 // DB stuff
 const (
-	host     = "127.0.0.1" //"sql_db_1" // "127.0.0.1" // use docker name if from docker, ip if not in container!
-	port     = 5435
+	host     = "json_to_sql_db_1" // "127.0.0.1" // use docker name if from docker, ip if not in container!
+	port     = 5432
 	user     = "postgres"
 	password = "password2"
 	dbname   = "humans"

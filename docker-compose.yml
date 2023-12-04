@@ -14,7 +14,7 @@ services:
       - POSTGRES_DB=humans
       - PGUSER=postgres # pg_isready is different from psql! So set it here too
     ports:
-      - "5435:5435" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+      - "5432:5432" # Forward the exposed port 8080 on the container to port 8080 on the host machine
     volumes: 
       - ./scripts/:/docker-entrypoint-initdb.d
       - db:/var/lib/postgresql/data
