@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -169,10 +170,48 @@ func AddToPostgres(people []Person) {
 	}
 }
 
+func GetRowsFromPostgres() {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo) // first arg is driver name (pq!)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var count int
+	err = db.QueryRow(`SELECT COUNT(*) FROM people`).Scan(&count)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("There are %d rows in the people table\n", count)
+
+}
+
+func WhatDoesUserWantToDo() {
+	var choice int
+	fmt.Print("What do you want to do?\n1. Add a user\n2. check DB\n3. Exit\n")
+	fmt.Scan(&choice)
+
+	switch choice {
+	case 1:
+		AddToPostgres(getUsers())
+	case 2:
+		GetRowsFromPostgres()
+	case 3:
+		fmt.Println("Exiting program.")
+		os.Exit(0)
+	default:
+		fmt.Println("Input not allowed")
+	}
+}
+
 func main() {
 
-	result := getUsers()
-	fmt.Printf("%+v\n", result)
-	AddToPostgres(result)
-
+	for {
+		WhatDoesUserWantToDo()
+	}
 }

@@ -1,10 +1,8 @@
 # jsontosql
 
 to do:
-- add dataschema to postgres
-- add user input
-- add main loop func asking what user wants to do, 1 adds users, 2 checks current db state...
 - handle passwords https://x-team.com/blog/storing-secure-passwords-with-postgresql/
+- host on free oracle!
 
 
 issues:
