@@ -9,7 +9,7 @@ issues:
 
 -----------
 
-sudo docker exec -it json_to_sql_db_1 bash -U
+sudo docker exec -it jsontosql_db_1 bash
 sudo docker compose run gocli
 
 ---- 
