@@ -5,19 +5,15 @@ import (
 	"testing"
 )
 
-func BenchmarkGetRandomUser(b *testing.B) {
+func BenchmarkGetRandomUsers(b *testing.B) {
 
-	var choice int = 100
+	var count int = 100
 
-	var people []Person
-	for i := 0; i < choice; i++ {
-		person := getRandomUser()
-		people = append(people, person)
-	}
+	var people []Person = getRandomUsers(count)
 	fmt.Print(people)
 }
 
-// Results:
+// Non concurrent results:
 // with 500:
 
 // | encoding/json | segmentio | goccy/go-json |
@@ -30,3 +26,15 @@ func BenchmarkGetRandomUser(b *testing.B) {
 // | :----------- | :------: | ------------: |
 // | 9800360 B/op | 12924096 B/op | 9721896 B/op |
 // | 48080 allocs/op | 46584 allocs/op | 46316 allocs/op |
+
+// tokenbucket 5 takes 20s (encoding/json)
+// 20310413868 ns/op	10218400 B/op	   50439 allocs/op
+
+// token bucket 10 took 10.369s
+// 10363534365 ns/op	10223976 B/op	   50450 allocs/op
+
+// rate limited at 11
+
+// | Max Speed | 10 tokens/second | https://randomuser.me/api |
+// | :----------- | :------: | ------------: |
+// | 0363534365 ns/op | 10223976 B/op | 50450 allocs/op |

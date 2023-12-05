@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -26,12 +28,7 @@ func getUsers() []Person {
 	case 1:
 		fmt.Println("How many users?")
 		fmt.Scan(&choice)
-		var people []Person
-		for i := 0; i < choice; i++ {
-			person := getRandomUser()
-			people = append(people, person)
-		}
-		return people
+		return getRandomUsers(choice)
 	case 2:
 		return getDummyJsonUsers()
 	case 3:
@@ -43,21 +40,74 @@ func getUsers() []Person {
 	}
 }
 
-func getRandomUser() Person {
-	resp, err := http.Get("https://randomuser.me/api/")
+func getRandomUsers(count int) []Person {
+	var people []Person
+	ch := make(chan Person, count) // buffer with capacity of count
+	var wg sync.WaitGroup
+	done := make(chan struct{})
+
+	// token bucket to avoid 429 error
+	var tokenpersecond int = 10 // rate limited at 11
+	rateLimiter := make(chan time.Time, tokenpersecond)
+	go func() {
+		ticker := time.NewTicker(time.Second / time.Duration(tokenpersecond))
+		defer close(rateLimiter)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				rateLimiter <- time.Now()
+
+			case <-done:
+				return
+			}
+		}
+	}()
+
+	for i := 0; i < count; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-rateLimiter // wait for token
+			getRandomUser(ch)
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for person := range ch {
+		people = append(people, person)
+	}
+	return people
+}
+
+func getRandomUser(ch chan<- Person) {
+
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
+	resp, err := client.Get("https://randomuser.me/api/")
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Print("status not ok\n")
+		panic(resp.StatusCode)
+	}
 	decoder := json.NewDecoder(resp.Body)
 	var RUP RandomUserPerson
-	err = decoder.Decode(&RUP) // output is this RUP struct
+	err = decoder.Decode(&RUP)
 	if err != nil {
+		fmt.Printf("%v", resp.Body)
 		panic(err)
 	}
-
-	return convertToPerson(RUP)
+	person := convertToPerson(RUP)
+	ch <- person
 }
 
 func convertToPerson(rUP RandomUserPerson) Person {

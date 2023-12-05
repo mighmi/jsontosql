@@ -11,3 +11,10 @@ issues:
 
 sudo docker exec -it json_to_sql_db_1 bash -U
 sudo docker compose run gocli
+
+---- 
+
+Final performance:
+| Max Speed | 10 tokens/second | else randomuser.me/api throws 429 |
+| :----------- | :------: | ------------: |
+| 0363534365 ns/op | 10223976 B/op | 50450 allocs/op |
